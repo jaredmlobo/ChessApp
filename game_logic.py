@@ -21,6 +21,8 @@ class chess_board(pd.DataFrame):
 
             self.fillna('', inplace=True)
 
+        self.last_move = -99, -99, -99, -99
+
     def get_square(self, x, y):
         if x<1 or x>8 or y<1 or y>8:
             return None
@@ -28,7 +30,7 @@ class chess_board(pd.DataFrame):
     
     def get_moves(self, x, y, game, show = False):
         piece = self.get_square(x,y)
-        print('piece = ', piece)
+        # print('piece = ', piece)
         if piece == None or piece == '':
             return []
         else:
@@ -43,14 +45,14 @@ class chess_board(pd.DataFrame):
             for x,y in moves:
                 board_copy.loc[y,x] = 'X' + str(board_copy.loc[y][x])
 
-            display(board_copy)
+            print(board_copy)
 
         return moves
     
     def move(self, game, x1, y1, x2, y2, show = False):
 
         moves = self.get_moves(x1,y1, game)
-        print(moves)
+        # print(moves)
         if (x2,y2) not in moves:
             print('invalid move')
             return False
@@ -64,7 +66,9 @@ class chess_board(pd.DataFrame):
         
         if show:
             board_copy = self.copy()
-            display(board_copy)
+            print(board_copy)
+
+        self.last_move = (x1,y1,x2,y2)
         
         return True
 
@@ -97,10 +101,10 @@ class chess_board(pd.DataFrame):
         for y, row in self.iterrows():
             for x,piece in row.items():
                 if piece != '' and piece.color == color:
-                    print('checking attacks '+ str(x)+ str(y)+str(piece))
+                    # print('checking attacks '+ str(x)+ str(y)+str(piece))
 
                     attacks = piece.find_moves(self,x,y, attacks_only=True)
-                    print(attacks)
+                    # print(attacks)
                     color_attacks.update(attacks)
 
         return color_attacks
@@ -110,14 +114,14 @@ class chess_board(pd.DataFrame):
         color = self.get_square(x1,y1).color
         board_copy = self.board_copy()
         board_copy.move_piece(x1, y1, x2, y2)
-        print(board_copy)
+        # print(board_copy)
 
         if color == 'w': 
-            look_for_checks = board_copy.get_attacks(game, 'b')
+            look_for_checks = board_copy.get_attacks('b')
         else:
-            look_for_checks = board_copy.get_attacks(game, 'w')
-        print("move checking: ",x2,y2)
-        print('look_for_checks', look_for_checks)
+            look_for_checks = board_copy.get_attacks('w')
+        # print("move checking: ",x2,y2)
+        # print('look_for_checks', look_for_checks)
         for x,y in look_for_checks:
             piece = self.get_square(x,y)
             
@@ -139,7 +143,6 @@ class game:
         self.board = chess_board()
         self.status = 'none'
         self.turn = 'w'
-        self.last_move = -99, -99, -99, -99
 
     def get_moves(self, x, y, show = False):
         return self.board.get_moves(x, y, self, show)
@@ -158,11 +161,10 @@ class game:
 
             if self.turn == 'w':
                 self.turn = 'b'
-                look_for_checks = self.board.get_attacks(self, 'w')
+                look_for_checks = self.board.get_attacks('w')
             else:
                 self.turn = 'w'
-                look_for_checks = self.board.get_attacks(self, 'b')
-            self.last_move = (x1,y1,x2,y2)
+                look_for_checks = self.board.get_attacks('b')
 
             for x,y in look_for_checks:
                 piece = self.board.get_square(x,y)
@@ -172,3 +174,26 @@ class game:
     # def checkout_move(self, x1, y1, x2, y2):
     #     board_copy = self.board.copy()
     #     board_copy.move(x1, y1, x2, y2)
+
+
+def play_chess():
+    new_game = game()
+    print(new_game.board)
+    while True:
+        user_input = input(f"{new_game.turn} player turn: Enter command (Action-inputs)")
+        print(user_input)
+        parts = user_input.split('-') 
+        action = parts[0]
+        print(action)
+
+        if action == 'quit':
+            break
+        elif action == 'move':
+            x1,y1,x2,y2 = parts[1].split(',')
+            new_game.move(int(x1),int(y1),int(x2),int(y2))
+            print(new_game.board)
+
+
+print(__name__)
+if __name__ == '__main__':
+    play_chess()

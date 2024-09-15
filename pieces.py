@@ -332,7 +332,7 @@ class pawn(piece):
             moves.extend(self.valid_moves_helper(board, x, y, forward, forward_lim))
 
         # en pessant 
-        last_x1, last_y1, last_x2, last_y2 = game.last_move
+        last_x1, last_y1, last_x2, last_y2 = board.last_move
         if isinstance(board.get_square(last_x2,last_y2), pawn) and abs(last_y2-last_y1) == 2 and last_y2 == y:
             moves.extend([(last_x1, int((last_y1 + last_y2)/2))])
         return moves
