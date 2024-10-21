@@ -1,3 +1,5 @@
+from utils import *
+
 class piece:
 
     def __init__(self, color, ) -> None:
@@ -171,7 +173,9 @@ class piece:
 
         for i in range(1, lim+1):
             xi, yi = xy_func(x, y, i)
+            print(xi, yi)
             new_square = board.get_square(xi, yi)
+            print(new_square)
             if new_square == None:
                 break
             # print('Square {},{}'.format(xi, yi))
@@ -304,7 +308,7 @@ class pawn(piece):
     def find_moves(self, board, x, y, attacks_only = False):
         moves = []
 
-        if self.color == 'w':
+        if self.color == 'b':
             direction = -1
             start = 7
         else:
@@ -332,9 +336,12 @@ class pawn(piece):
             moves.extend(self.valid_moves_helper(board, x, y, forward, forward_lim))
 
         # en pessant 
-        last_x1, last_y1, last_x2, last_y2 = board.last_move
-        if isinstance(board.get_square(last_x2,last_y2), pawn) and abs(last_y2-last_y1) == 2 and last_y2 == y:
-            moves.extend([(last_x1, int((last_y1 + last_y2)/2))])
+        pos1, pos2 = board.last_move
+        if pos1 is not None and pos2 is not None:
+            last_x1, last_y1 = board_to_grid(pos1)
+            last_x2, last_y2 = board_to_grid(pos2)
+            if isinstance(board.get_square(last_x2,last_y2), pawn) and abs(last_y2-last_y1) == 2 and last_y2 == y:
+                moves.extend([(last_x1, int((last_y1 + last_y2)/2))])
         return moves
         
 class rook(piece):
