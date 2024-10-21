@@ -9,9 +9,9 @@ def board_to_grid(pos):
     return (get_column_number(x), int(y))
 
 def get_column_letter(col_num):
-    cols = {1:'A', 2:'B', 3:'C', 4:'D', 5:'E', 6:'F', 7:'G', 8:'H'}
+    cols = {1:'a', 2:'b', 3:'c', 4:'d', 5:'e', 6:'f', 7:'g', 8:'h'}
     return cols[col_num]
 
 def get_column_number(col_num):
-    cols = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8}
+    cols = {'a':1, 'b':2, 'c':3, 'd':4, 'e':5, 'f':6, 'g':7, 'h':8}
     return cols[col_num]
