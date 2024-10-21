@@ -14,7 +14,7 @@ class chess_board(pd.DataFrame):
             super().__init__(transfer)
 
         else:
-            super().__init__(columns=['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], index=reversed(range(1,9)))
+            super().__init__(columns=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'], index=reversed(range(1,9)))
 
             self.loc[1] = [rook('w'), knight('w'), bishop('w'), queen('w'), king('w'), bishop('w'), knight('w'), rook('w')]
             self.loc[2] = [pawn('w')]
