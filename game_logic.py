@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from pieces import *
 from utils import *
+import warnings
 
 
 class chess_board(pd.DataFrame):
@@ -24,49 +25,57 @@ class chess_board(pd.DataFrame):
 
             self.fillna('', inplace=True)
 
-        self.last_move = None, None
+        
+        with warnings.catch_warnings():
+            warnings.simplefilter(action='ignore', category=UserWarning)
+            self.last_move = None, None
 
 
     def get_square(self, *arg):
-        if len(arg) == 1:
-            print(arg)
-            x,y = board_to_grid(arg[0])
-        else: 
-            x,y = arg[0], arg[1]
-        
+        """
+        Return the piece (or blank) at a given position
+        """
         try:
-            return self.loc[y][x]
+            if len(arg) == 1:
+                [col,y] = list(arg[0])
+            else: 
+                col = get_column_letter(arg[0])
+                y = arg[1]
+            return self.loc[int(y), col]
         except (IndexError, KeyError): 
             return None
     
     
     def set_square(self, pos, piece = ''):
+        """
+        Set a given positon to be a given piece
+        """
         [col,y] = list(pos)
         self.loc[int(y),col] = piece
-
     
     def get_moves(self, pos, game, show = False):
+        """
+        Get the valid moves for the piece at position pos
+        """
+        # check if the position provided is a valid piece
         piece = self.get_square(pos)
-        # print('piece = ', piece)
         if piece == None or piece == '':
             print('Not a piece')
             return []
+        # if valid, get the functinally allowed moves for that piece
         else:
             x,y = board_to_grid(pos)
-            print('finding moves for ', x,y)
             moves = piece.find_moves(self, x,y)
-            print(moves)
+
+        print(moves)
+        moves = [pos2 for pos2 in moves if self.check_move_for_checks(game, pos, pos2)]
+        print(moves)
 
         for i in range(len(moves)):
             #convert moves output back to board notation 
             x,y = moves[i] 
             pos2 = grid_to_board(x,y)
-            print(pos2)
             moves[i] = pos2
-
-            if self.check_move_for_checks(game, pos, pos2) == False:
-                print('move ', pos2, ' removed due to causing check')
-                moves.remove(pos2)
 
         if show: 
             board_copy = self.copy()
@@ -79,15 +88,16 @@ class chess_board(pd.DataFrame):
     
     
     def move(self, game, pos1, pos2, show = False):
+        """
+        Attempt to move the piece on position pos1 to pos2
+        """
 
         moves = self.get_moves(pos1, game)
         # print(moves)
         if (pos2) not in moves:
-            print("valid moves: ", moves)
             print('invalid move')
             return False
         else:
-            print('valid move')
             self.move_piece(pos1, pos2)
             
 
@@ -120,7 +130,7 @@ class chess_board(pd.DataFrame):
         elif isinstance(piece, pawn) and (x2 != x1) and self.get_square(pos2) =='':
             self.set_square(pos2, piece) 
             self.set_square(pos1)
-            self.set_square(col2 + str(y2))
+            self.set_square(col2 + str(y1))
 
         else:
             self.set_square(pos2, piece) 
@@ -128,11 +138,11 @@ class chess_board(pd.DataFrame):
 
             # if castling: move the rook
             if isinstance(piece, king) and abs(x2-x1) == 2:
-                # tight castle
+                # king side castle
                 if x2 == 7: 
                     self.set_square('F'+str(y2), self.get_square('H'+str(y1)))
                     self.set_square('H'+str(y1))
-                # loose castle
+                # queen side castle
                 elif x2 == 3:
                     self.set_square('D'+str(y2), self.get_square('A'+str(y1)))
                     self.set_square('A'+str(y1))
@@ -155,6 +165,9 @@ class chess_board(pd.DataFrame):
     
     def check_move_for_checks(self, game, pos1, pos2):
         """checks to make sure king is not put in check by a move"""
+        # format pos2
+        pos2 = grid_to_board(pos2[0], pos2[1])
+        
         color = self.get_square(pos1).color
         board_copy = self.board_copy()
         board_copy.move_piece(pos1, pos2)
@@ -191,9 +204,15 @@ class game:
         self.turn = 'w'
 
     def get_moves(self, pos, show = False):
+        """
+        Get the possible moves for the piece at position pos
+        """
         return self.board.get_moves(pos, self, show)
 
     def move(self, pos1, pos2, show = False):
+        """
+        Attempt to move the piece on pos1 to pos2
+        """
         piece = self.board.get_square(pos1)
         if piece != '' and piece.color != self.turn:
             print('Wrong turn')
@@ -217,12 +236,18 @@ class game:
                 if isinstance(piece, king) and piece.color == self.turn:
                     self.status = 'check'
     
-    # def checkout_move(self, pos1, pos2):
-    #     board_copy = self.board.copy()
-    #     board_copy.move(pos1, pos2)
-
+    def execute_move_list(self, move_list):
+        """
+        Execute a provided list of moves on the game
+        """
+        for pos1, pos2 in move_list:
+            self.move(pos1, pos2)
 
 def play_chess():
+    """
+    Function to handle running the game in the command line
+    Is this the best way to do this?
+    """
     new_game = game()
     print(new_game.board)
     while True:

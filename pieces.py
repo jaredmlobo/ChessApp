@@ -173,9 +173,7 @@ class piece:
 
         for i in range(1, lim+1):
             xi, yi = xy_func(x, y, i)
-            print(xi, yi)
             new_square = board.get_square(xi, yi)
-            print(new_square)
             if new_square == None:
                 break
             # print('Square {},{}'.format(xi, yi))
